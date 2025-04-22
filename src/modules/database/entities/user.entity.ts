@@ -10,10 +10,10 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true, unique: true })
   wallet_sol_address: string;
 
-  @Column({ nullable: true, type: "text", select: false })
+  @Column({ nullable: true, type: "text", select: true })
   encrypted_private_key: string;
 
-  @Column({ nullable: true, select: false })
+  @Column({ nullable: true, select: true })
   encrypted_phrase: string;
 
   @Column({ nullable: true, unique: true })

@@ -75,19 +75,21 @@ export class ExampleToolExecutionCallback implements IToolExecutionCallback {
   messageId: number;
   messagePlanListId: number;
   messageData: (type: string, message: string) => void;
-
+  handleTransaction: (telegramId: string, transactionData: any) => void;
   constructor(
     chatId: string,
     bot: TelegramBot,
     messageId: number,
     messagePlanListId: number,
     messageData: (type: string, message: string) => void,
+    handleTransaction: (telegramId: string, transactionData: any) => void,
   ) {
     this.chatId = chatId;
     this.bot = bot;
     this.messageId = messageId;
     this.messagePlanListId = messagePlanListId;
     this.messageData = messageData;
+    this.handleTransaction = handleTransaction;
   }
 
   setMessageId(messageId: number) {
@@ -100,6 +102,10 @@ export class ExampleToolExecutionCallback implements IToolExecutionCallback {
 
   setMessageData(messageData: (type: string, message: string) => void) {
     this.messageData = messageData;
+  }
+
+  setHandleTransaction(handleTransaction: (telegramId: string, transactionData: any) => void) {
+    this.handleTransaction = handleTransaction;
   }
 
   onToolExecution(data: ToolExecutionData): void {
@@ -230,6 +236,19 @@ export class ExampleToolExecutionCallback implements IToolExecutionCallback {
 - <b>Protocol:</b> ${getProvider(data.data.provider)}
 - <b>Transaction Hash:</b> <a href="${scanUrl}">View on ${getNetwork(data.data.network)} Explorer</a>
           `;
+          console.log('🚀 ~ ExampleToolExecutionCallback ~ onToolExecution ~ data', data);
+            const dataTransaction = {
+              type: data.data.type,
+              amount: data.data.amountA || 0,
+              tokenSymbol: data.data.tokenA?.symbol || '',
+              network: data.data.network,
+              provider: data.data.provider,
+              transactionHash: data.data.transactionHash,
+              timestamp: data.timestamp,
+              address: data.data.address || '',
+            };
+            // Pass the transaction data to the callback for database storage
+            this.handleTransaction(this.chatId, dataTransaction);
           }
         } else if (data.toolName === ToolName.TRANSFER) {
           const scanUrl = getScanUrl(data.data.network, data.data.transactionHash);

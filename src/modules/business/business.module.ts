@@ -14,6 +14,7 @@ import { ethers } from "ethers";
 import { AiService } from "./services/ai.service";
 import { FourMemeService } from "./services/fourmeme.service";
 import { WalletCronService } from "./services/wallet-cron.service";
+import { ClaimService } from './services/claim.service';
 const services = [
   TokenService,
   UserService,
@@ -23,6 +24,7 @@ const services = [
   ApiService,
   AiService,
   FourMemeService,
+  ClaimService
 ];
 @Global()
 @Module({
@@ -75,7 +77,15 @@ const services = [
   exports: [...services, "SOLANA_CONNECTION"],
 })
 export class BusinessModule implements OnApplicationBootstrap {
-  constructor() { }
+  constructor(
+    private readonly claimService: ClaimService,
+  ) { }
 
-  async onApplicationBootstrap() { }
+  async onApplicationBootstrap() {
+    // await this.claimService.saveClaimTransaction("", "0.01945407", "USDT", "BSC", "BSC", "0x0000000000000000000000000000000000000000", 1745230006);
+    // const claims = await this.claimService.getClaimsByUserId("");
+    // console.log(claims);
+    // const claimableBalances = await this.claimService.getAllClaimableBalances("");
+    // console.log(claimableBalances);
+  }
 }

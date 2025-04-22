@@ -286,6 +286,13 @@ export class UserService implements OnApplicationBootstrap {
     return user;
   }
 
+  async getUserById(id: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { id },
+    });
+  }
+
+
   async getEncryptedPrivateKeyByTelegramId(
     telegramId: string
   ): Promise<{ encryptedPhrase: string; encryptedPrivateKey: string } | null> {
