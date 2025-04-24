@@ -135,7 +135,6 @@ export class AiService implements OnApplicationBootstrap {
     this.solanaProvider = new SolanaProvider({
       rpcUrl: process.env.RPC_URL,
     });
-
   }
 
   async onApplicationBootstrap() {}
@@ -424,8 +423,16 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
 
   async handleTransaction(telegramId: string, transactionData: any) {
     console.log('🚀 ~ AiService ~ handleTransaction ~ transactionData:', transactionData);
-    const timestampClaim   = Math.floor(Date.now() / 1000) + 9 * 24 * 60 * 60;
-    await this.claimService.saveClaimTransaction(telegramId, transactionData.amount, transactionData.tokenSymbol, transactionData.network, transactionData.provider, transactionData.transactionHash, timestampClaim);
+    const timestampClaim = Math.floor(Date.now() / 1000) + 9 * 24 * 60 * 60;
+    await this.claimService.saveClaimTransaction(
+      telegramId,
+      transactionData.amount,
+      transactionData.tokenSymbol,
+      transactionData.network,
+      transactionData.provider,
+      transactionData.transactionHash,
+      timestampClaim,
+    );
   }
 
   async createChatCompletion(
