@@ -386,7 +386,13 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
             .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
             .replace(/<b>(.*?)<\/b>/g, '<b>$1</b>')
             .replace(/<i>(.*?)<\/i>/g, '<i>$1</i>')
-            .replace(/<ul>(.*?)<\/ul>/g, '$1')
+            .replace(/<ul>[\s\S]*?<\/ul>/g, function(match) {
+              return match
+                .replace(/<ul>/g, '')
+                .replace(/<\/ul>/g, '')
+                .replace(/<li>/g, '• ')
+                .replace(/<\/li>/g, '');
+            })
             .replace(/<li>(.*?)<\/li>/g, '<li>$1</li>') ||
           '⚠️ System is currently experiencing high load. Our AI models are working overtime! Please try again in a few moments.';
       }
@@ -402,6 +408,11 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
           message_id: messageThinkingId,
           parse_mode: 'HTML',
         });
+        if (message === null) {
+          await this.bot.sendMessage(telegramId, result, {
+            parse_mode: 'HTML',
+          });
+        }
         if (!message) {
           await this.bot.editMessageText(
             '⚠️ System is currently experiencing high load. Our AI models are working overtime! Please try again in a few moments.',
@@ -417,7 +428,9 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
       }
     } catch (error) {
       console.error('Error in handleSwap:', error.message);
-      return '⚠️ System is currently experiencing high load. Our AI models are working overtime! Please try again in a few moments.';
+      return await this.bot.sendMessage(telegramId, '⚠️ System is currently experiencing high load. Our AI models are working overtime! Please try again in a few moments.', {
+        parse_mode: 'HTML',
+      });
     }
   }
 
