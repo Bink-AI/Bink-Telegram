@@ -44,6 +44,7 @@ import { OkuProvider } from '@binkai/oku-provider';
 import { KyberProvider } from '@binkai/kyber-provider';
 import { ListaProvider } from '@binkai/lista-provider';
 import { ClaimService } from './claim.service';
+import sanitizeHtml from 'sanitize-html';
 
 @Injectable()
 export class AiService implements OnApplicationBootstrap {
@@ -380,26 +381,25 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
       const inputResult = await agent.execute(executeData);
 
       let result;
-      if (inputResult && inputResult.length > 0) {
-        result =
-          inputResult
-            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-            .replace(/<b>(.*?)<\/b>/g, '<b>$1</b>')
-            .replace(/<i>(.*?)<\/i>/g, '<i>$1</i>')
-            .replace(/<ul>[\s\S]*?<\/ul>/g, function(match) {
-              return match
-                .replace(/<ul>/g, '')
-                .replace(/<\/ul>/g, '')
-                .replace(/<li>/g, '• ')
-                .replace(/<\/li>/g, '');
-            })
-            .replace(/<li>(.*?)<\/li>/g, '<li>$1</li>') ||
-          '⚠️ System is currently experiencing high load. Our AI models are working overtime! Please try again in a few moments.';
-      }
-
+      // Step 1: Sanitize HTML, keeping only Telegram-supported tags
+      result = sanitizeHtml(inputResult, {
+        allowedTags: ['b', 'i', 'code', 'a'],
+        allowedAttributes: {
+          a: ['href']
+        }
+      });
+      
+      result = result
+      // Step 2: Process ul/li tags - remove ALL whitespace before adding our own formatting
+      .replace(/<ul>[\s\S]*?<\/ul>/g, function(match) {
+        return match
+          .replace(/<ul>\s*/g, '\n')  
+          .replace(/\s*<\/ul>/g, '\n')  
+          .replace(/\s*<li>\s*/g, '- ') 
+          .replace(/\s*<\/li>\s*/g, '\n') 
+      }).trim();
       console.log('🚀 ~ AiService End ~ result:', result);
-      // console.log('🚀 ~ AiService End ~ transactionData:', transactionData);
-
+      
       // TODO: handle result
       if (result && !isTransactionSuccess) {
         // TODO: Edit message in chat
