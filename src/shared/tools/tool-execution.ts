@@ -76,6 +76,7 @@ export class ExampleToolExecutionCallback implements IToolExecutionCallback {
   messagePlanListId: number;
   messageData: (type: string, message: string) => void;
   handleTransaction: (telegramId: string, transactionData: any) => void;
+  onMessageIdChange?: (newMessageId: number) => void;
   constructor(
     chatId: string,
     bot: TelegramBot,
@@ -83,6 +84,7 @@ export class ExampleToolExecutionCallback implements IToolExecutionCallback {
     messagePlanListId: number,
     messageData: (type: string, message: string) => void,
     handleTransaction: (telegramId: string, transactionData: any) => void,
+    onMessageIdChange?: (newMessageId: number) => void,
   ) {
     this.chatId = chatId;
     this.bot = bot;
@@ -90,10 +92,14 @@ export class ExampleToolExecutionCallback implements IToolExecutionCallback {
     this.messagePlanListId = messagePlanListId;
     this.messageData = messageData;
     this.handleTransaction = handleTransaction;
+    this.onMessageIdChange = onMessageIdChange || ((id) => {});
   }
 
   setMessageId(messageId: number) {
     this.messageId = messageId;
+    if (this.onMessageIdChange) {
+      this.onMessageIdChange(messageId);
+    }
   }
 
   setMessagePlanListId(messagePlanListId: number) {

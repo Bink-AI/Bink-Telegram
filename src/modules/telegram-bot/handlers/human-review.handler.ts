@@ -30,11 +30,11 @@ export class HumanReviewHandler implements Handler {
           ? EHumanReviewAction.APPROVE
           : EHumanReviewAction.REJECT;
 
-      // Send the response with the action
-      await this.aiService.handleSwap(data.telegramId, '', action as EHumanReviewAction);
-
       // Delete the original message with buttons
       await this.bot.deleteMessage(data.chatId, data.messageId.toString());
+
+      // Send the response with the action
+      await this.aiService.handleSwap(data.telegramId, '', action as EHumanReviewAction);
     } catch (error) {
       console.error('Error in HumanReviewHandler:', error.message);
       await this.bot.sendMessage(

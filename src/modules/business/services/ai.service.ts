@@ -168,6 +168,7 @@ export class AiService implements OnApplicationBootstrap {
       });
       messageThinkingId = messageThinking.message_id;
 
+
       let agent = this.mapAgent[telegramId];
 
       //init agent
@@ -271,6 +272,7 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
         await agent.registerPlugin(stakingPlugin as any);
         await agent.registerPlugin(imagePlugin as any);
 
+
         const toolExecutionCallback = new ExampleToolExecutionCallback(
           telegramId,
           this.bot,
@@ -289,6 +291,9 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
           async (telegramId: string, transactionData: any) => {
             this.handleTransaction(telegramId, transactionData);
           },
+          (newMessageId: number) => {
+            messageThinkingId = newMessageId;
+          }
         );
 
         const askUserCallback = new ExampleAskUserCallback(
@@ -428,9 +433,9 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
       }
     } catch (error) {
       console.error('Error in handleSwap:', error.message);
-      return await this.bot.sendMessage(telegramId, '⚠️ System is currently experiencing high load. Our AI models are working overtime! Please try again in a few moments.', {
-        parse_mode: 'HTML',
-      });
+      // return await this.bot.sendMessage(telegramId, '⚠️ System is currently experiencing high load. Our AI models are working overtime! Please try again in a few moments.', {
+      //   parse_mode: 'HTML',
+      // });
     }
   }
 
