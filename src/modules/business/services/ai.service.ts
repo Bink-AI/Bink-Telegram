@@ -12,6 +12,7 @@ import {
   UUID,
   PlanningAgent,
   NetworkName,
+  OpenAIModel,
 } from '@binkai/core';
 import { SwapPlugin } from '@binkai/swap-plugin';
 import { PancakeSwapProvider } from '@binkai/pancakeswap-provider';
@@ -235,9 +236,14 @@ export class AiService implements OnApplicationBootstrap {
           }),
         ]);
 
+        const llmOpenai = new OpenAIModel({
+          apiKey: this.configService.get<string>('openai.apiKey'),
+          model: 'gpt-4.1',
+        });
+
         agent = new PlanningAgent(
+          llmOpenai,
           {
-            model: 'gpt-4.1',
             temperature: 0,
             isHumanReview: true,
             systemPrompt: `You are a BINK AI assistant. You can help user to query blockchain data .You are able to perform swaps and get token information on multiple chains. If you do not have the token address, you can use the symbol to get the token information before performing a swap.Additionally, you have the ability to get wallet balances across various networks. If the user doesn't specify a particular network, you can retrieve wallet balances from multiple chains like BNB, Solana, and Ethereum.
