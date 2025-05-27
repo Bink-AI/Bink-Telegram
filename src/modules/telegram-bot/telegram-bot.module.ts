@@ -26,6 +26,9 @@ import { ReferralHandler } from "./handlers/referral.handler";
 import { ClearHandler } from "./handlers/clear.handler";
 import { HumanReviewHandler } from "./handlers/human-review.handler";
 
+// ✅ New handler for AI-generated tweet suggestions
+import { TweetifyHandler } from "./handlers/tweetify.handler";
+
 const handlers = [
   StartHandler,
   OpenMiniAppHandler,
@@ -43,6 +46,7 @@ const handlers = [
   CustomPercentageHandler,
   HelpHandler,
   ReferralHandler,
+  TweetifyHandler, // ✅ Registered here
 ];
 
 const services = [HandlerService];
@@ -103,9 +107,6 @@ export class TelegramBotModule implements OnModuleInit {
   async onModuleInit() {
     const handlers = this.handlerService.getHandlers();
     this.telegramBot.registerHandlers(handlers);
-    // await this.telegramBot.sendMessage('939769871', 'hello', {
-    //   parse_mode: EParseMode.HTML,
-    // });
     await this.telegramBot.start();
   }
 }
