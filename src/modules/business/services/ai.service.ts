@@ -65,6 +65,7 @@ export class AiService implements OnApplicationBootstrap {
   mapAskUserCallback: Record<string, ExampleAskUserCallback> = {};
   mapHumanReviewCallback: Record<string, ExampleHumanReviewCallback> = {};
   @Inject('BSC_CONNECTION') private bscProvider: JsonRpcProvider;
+  @Inject('BASE_CONNECTION') private baseProvider: JsonRpcProvider;
   @Inject('ETHEREUM_CONNECTION') private ethProvider: JsonRpcProvider;
   @Inject(ClaimService) private claimService: ClaimService;
   constructor(
@@ -110,6 +111,19 @@ export class AiService implements OnApplicationBootstrap {
             name: 'Solana',
             symbol: 'SOL',
             decimals: 9,
+          },
+        },
+      },
+      base: {
+        type: 'evm' as NetworkType,
+        config: {
+          chainId: 8453,
+          rpcUrl: process.env.BASE_RPC_URL,
+          name: 'Base',
+          nativeCurrency: {
+            name: 'Ethereum',
+            symbol: 'ETH',
+            decimals: 18,
           },
         },
       },
@@ -169,7 +183,6 @@ export class AiService implements OnApplicationBootstrap {
       });
       messageThinkingId = messageThinking.message_id;
 
-
       let agent = this.mapAgent[telegramId];
 
       //init agent
@@ -181,7 +194,9 @@ export class AiService implements OnApplicationBootstrap {
         const venus = new VenusProvider(this.bscProvider, bscChainId);
         const kernelDao = new KernelDaoProvider(this.bscProvider, bscChainId);
         const oku = new OkuProvider(this.bscProvider, bscChainId);
-        const kyber = new KyberProvider(this.bscProvider, bscChainId);
+        const kyberBsc = new KyberProvider(this.bscProvider, bscChainId);
+        const kyberBase = new KyberProvider(this.baseProvider, 8453 as number);
+
         const jupiter = new JupiterProvider(new Connection(process.env.RPC_URL));
         const imagePlugin = new ImagePlugin();
         const swapPlugin = new SwapPlugin();
@@ -203,7 +218,7 @@ export class AiService implements OnApplicationBootstrap {
           swapPlugin.initialize({
             defaultSlippage: 0.5,
             defaultChain: 'bnb',
-            providers: [pancakeswap, fourMeme, thena, jupiter, oku, kyber],
+            providers: [pancakeswap, fourMeme, thena, jupiter, oku, kyberBsc, kyberBase],
             supportedChains: ['bnb', 'ethereum', 'solana'], // These will be intersected with agent's networks
           }),
           tokenPlugin.initialize({
@@ -278,7 +293,6 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
         await agent.registerPlugin(stakingPlugin as any);
         await agent.registerPlugin(imagePlugin as any);
 
-
         const toolExecutionCallback = new ExampleToolExecutionCallback(
           telegramId,
           this.bot,
@@ -299,7 +313,7 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
           },
           (newMessageId: number) => {
             messageThinkingId = newMessageId;
-          }
+          },
         );
 
         const askUserCallback = new ExampleAskUserCallback(
@@ -396,21 +410,22 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
       result = sanitizeHtml(inputResult, {
         allowedTags: ['b', 'i', 'code', 'a'],
         allowedAttributes: {
-          a: ['href']
-        }
+          a: ['href'],
+        },
       });
-      
+
       result = result
-      // Step 2: Process ul/li tags - remove ALL whitespace before adding our own formatting
-      .replace(/<ul>[\s\S]*?<\/ul>/g, function(match) {
-        return match
-          .replace(/<ul>\s*/g, '\n')  
-          .replace(/\s*<\/ul>/g, '\n')  
-          .replace(/\s*<li>\s*/g, '- ') 
-          .replace(/\s*<\/li>\s*/g, '\n') 
-      }).trim();
+        // Step 2: Process ul/li tags - remove ALL whitespace before adding our own formatting
+        .replace(/<ul>[\s\S]*?<\/ul>/g, function (match) {
+          return match
+            .replace(/<ul>\s*/g, '\n')
+            .replace(/\s*<\/ul>/g, '\n')
+            .replace(/\s*<li>\s*/g, '- ')
+            .replace(/\s*<\/li>\s*/g, '\n');
+        })
+        .trim();
       console.log('🚀 ~ AiService End ~ result:', result);
-      
+
       // TODO: handle result
       if (result && !isTransactionSuccess) {
         // TODO: Edit message in chat
