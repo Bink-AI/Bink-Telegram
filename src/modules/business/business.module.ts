@@ -70,6 +70,13 @@ const services = [
       },
     },
     {
+      provide: 'HYPERLIQUID_CONNECTION',
+      useFactory: () => {
+        const rpc = process.env.HYPERLIQUID_RPC || 'https://rpc.hyperliquid.xyz/evm';
+        return new ethers.JsonRpcProvider(rpc);
+      },
+    },
+    {
       provide: 'CACHE_MANAGER',
       useFactory: () => {
         const family = process.env.REDIS_FAMILY;
