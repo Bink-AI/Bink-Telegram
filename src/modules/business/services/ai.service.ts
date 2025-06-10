@@ -44,6 +44,7 @@ import { EHumanReviewAction, EMessageType } from '@/shared/constants/enums';
 import { OkuProvider } from '@binkai/oku-provider';
 import { KyberProvider } from '@binkai/kyber-provider';
 import { ListaProvider } from '@binkai/lista-provider';
+import { HyperliquidProvider } from '@binkai/hyperliquid-provider';
 import { ClaimService } from './claim.service';
 import sanitizeHtml from 'sanitize-html';
 
@@ -65,6 +66,8 @@ export class AiService implements OnApplicationBootstrap {
   mapAskUserCallback: Record<string, ExampleAskUserCallback> = {};
   mapHumanReviewCallback: Record<string, ExampleHumanReviewCallback> = {};
   @Inject('BSC_CONNECTION') private bscProvider: JsonRpcProvider;
+  @Inject('BASE_CONNECTION') private baseProvider: JsonRpcProvider;
+  @Inject('HYPERLIQUID_CONNECTION') private hyperliquidProvider: JsonRpcProvider;
   @Inject('ETHEREUM_CONNECTION') private ethProvider: JsonRpcProvider;
   @Inject(ClaimService) private claimService: ClaimService;
   constructor(
@@ -79,7 +82,7 @@ export class AiService implements OnApplicationBootstrap {
         type: 'evm' as NetworkType,
         config: {
           chainId: 56,
-          rpcUrl: process.env.BSC_RPC_URL,
+          rpcUrl: process.env.BSC_RPC_URL || 'https://bsc-dataseed1.binance.org',
           name: 'BNB Chain',
           nativeCurrency: {
             name: 'BNB',
@@ -92,7 +95,7 @@ export class AiService implements OnApplicationBootstrap {
         type: 'evm' as NetworkType,
         config: {
           chainId: 1,
-          rpcUrl: process.env.ETHEREUM_RPC_URL,
+          rpcUrl: process.env.ETHEREUM_RPC_URL || 'https://eth.llamarpc.com',
           name: 'Ethereum',
           nativeCurrency: {
             name: 'Ether',
@@ -104,12 +107,38 @@ export class AiService implements OnApplicationBootstrap {
       solana: {
         type: 'solana' as NetworkType,
         config: {
-          rpcUrl: process.env.RPC_URL,
+          rpcUrl: process.env.RPC_URL || 'https://api.mainnet-beta.solana.com',
           name: 'Solana',
           nativeCurrency: {
             name: 'Solana',
             symbol: 'SOL',
             decimals: 9,
+          },
+        },
+      },
+      base: {
+        type: 'evm' as NetworkType,
+        config: {
+          chainId: 8453,
+          rpcUrl: process.env.BASE_RPC_URL || 'https://base.llamarpc.com',
+          name: 'Base',
+          nativeCurrency: {
+            name: 'Ethereum',
+            symbol: 'ETH',
+            decimals: 18,
+          },
+        },
+      },
+      hyperliquid: {
+        type: 'evm' as NetworkType,
+        config: {
+          chainId: 999,
+          rpcUrl: process.env.HYPERLIQUID_RPC || 'https://rpc.hyperliquid.xyz/evm',
+          name: 'Hyperliquid',
+          nativeCurrency: {
+            name: 'Hyperliquid',
+            symbol: 'HYPE',
+            decimals: 18,
           },
         },
       },
@@ -169,19 +198,23 @@ export class AiService implements OnApplicationBootstrap {
       });
       messageThinkingId = messageThinking.message_id;
 
-
       let agent = this.mapAgent[telegramId];
 
       //init agent
       if (!agent) {
-        const bscChainId = 56;
-        const pancakeswap = new PancakeSwapProvider(this.bscProvider, bscChainId);
+        const ChainId = {
+          BSC: 56,
+          ETH: 1,
+          BASE: 8453,
+          HYPERLIQUID: 999,
+        };
+        const pancakeswap = new PancakeSwapProvider(this.bscProvider, ChainId.BSC);
         // const okx = new OkxProvider(this.bscProvider, bscChainId);
-        const fourMeme = new FourMemeProvider(this.bscProvider, bscChainId);
-        const venus = new VenusProvider(this.bscProvider, bscChainId);
-        const kernelDao = new KernelDaoProvider(this.bscProvider, bscChainId);
-        const oku = new OkuProvider(this.bscProvider, bscChainId);
-        const kyber = new KyberProvider(this.bscProvider, bscChainId);
+        const fourMeme = new FourMemeProvider(this.bscProvider, ChainId.BSC);
+        const venus = new VenusProvider(this.bscProvider, ChainId.BSC);
+        const kernelDao = new KernelDaoProvider(this.bscProvider, ChainId.BSC);
+        const oku = new OkuProvider(this.bscProvider, ChainId.BSC);
+        const kyberBsc = new KyberProvider(this.bscProvider, ChainId.BSC);
         const jupiter = new JupiterProvider(new Connection(process.env.RPC_URL));
         const imagePlugin = new ImagePlugin();
         const swapPlugin = new SwapPlugin();
@@ -195,21 +228,33 @@ export class AiService implements OnApplicationBootstrap {
         );
         const walletPlugin = new WalletPlugin();
         const stakingPlugin = new StakingPlugin();
-        const thena = new ThenaProvider(this.bscProvider, bscChainId);
-        const lista = new ListaProvider(this.bscProvider, bscChainId);
+        const thena = new ThenaProvider(this.bscProvider, ChainId.BSC);
+        const lista = new ListaProvider(this.bscProvider, ChainId.BSC);
+
+        const kyberBase = new KyberProvider(this.baseProvider, ChainId.BASE);
+        const hyperliquid = new HyperliquidProvider(this.hyperliquidProvider, ChainId.HYPERLIQUID);
 
         // Initialize the swap plugin with supported chains and providers
         await Promise.all([
           swapPlugin.initialize({
             defaultSlippage: 0.5,
             defaultChain: 'bnb',
-            providers: [pancakeswap, fourMeme, thena, jupiter, oku, kyber],
-            supportedChains: ['bnb', 'ethereum', 'solana'], // These will be intersected with agent's networks
+            providers: [
+              pancakeswap,
+              fourMeme,
+              thena,
+              jupiter,
+              oku,
+              kyberBsc,
+              kyberBase,
+              hyperliquid,
+            ],
+            supportedChains: ['bnb', 'ethereum', 'solana', 'base', 'hyperliquid'], // These will be intersected with agent's networks
           }),
           tokenPlugin.initialize({
             defaultChain: 'bnb',
             providers: [this.birdeyeApi, fourMeme as any],
-            supportedChains: ['solana', 'bnb', 'ethereum'],
+            supportedChains: ['solana', 'bnb', 'ethereum', 'base', 'hyperliquid'],
           }),
           await knowledgePlugin.initialize({
             providers: [this.binkProvider],
@@ -226,7 +271,7 @@ export class AiService implements OnApplicationBootstrap {
           await walletPlugin.initialize({
             defaultChain: 'bnb',
             providers: [this.bnbProvider, this.birdeyeApi, this.alchemyApi, this.solanaProvider],
-            supportedChains: ['bnb', 'solana', 'ethereum'],
+            supportedChains: ['bnb', 'solana', 'ethereum', 'base', 'hyperliquid'],
           }),
           await stakingPlugin.initialize({
             defaultSlippage: 0.5,
@@ -263,6 +308,8 @@ CRITICAL:
 Wallet BNB: ${(await wallet.getAddress(NetworkName.BNB)) || 'Not available'}
 Wallet ETH: ${(await wallet.getAddress(NetworkName.ETHEREUM)) || 'Not available'}
 Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
+Wallet BASE: ${(await wallet.getAddress(NetworkName.BASE)) || 'Not available'}
+Wallet HYPERLIQUID: ${(await wallet.getAddress(NetworkName.HYPERLIQUID)) || 'Not available'}
             `,
           },
           wallet,
@@ -277,7 +324,6 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
         await agent.registerPlugin(walletPlugin as any);
         await agent.registerPlugin(stakingPlugin as any);
         await agent.registerPlugin(imagePlugin as any);
-
 
         const toolExecutionCallback = new ExampleToolExecutionCallback(
           telegramId,
@@ -299,7 +345,7 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
           },
           (newMessageId: number) => {
             messageThinkingId = newMessageId;
-          }
+          },
         );
 
         const askUserCallback = new ExampleAskUserCallback(
@@ -396,21 +442,22 @@ Wallet SOL: ${(await wallet.getAddress(NetworkName.SOLANA)) || 'Not available'}
       result = sanitizeHtml(inputResult, {
         allowedTags: ['b', 'i', 'code', 'a'],
         allowedAttributes: {
-          a: ['href']
-        }
+          a: ['href'],
+        },
       });
-      
+
       result = result
-      // Step 2: Process ul/li tags - remove ALL whitespace before adding our own formatting
-      .replace(/<ul>[\s\S]*?<\/ul>/g, function(match) {
-        return match
-          .replace(/<ul>\s*/g, '\n')  
-          .replace(/\s*<\/ul>/g, '\n')  
-          .replace(/\s*<li>\s*/g, '- ') 
-          .replace(/\s*<\/li>\s*/g, '\n') 
-      }).trim();
+        // Step 2: Process ul/li tags - remove ALL whitespace before adding our own formatting
+        .replace(/<ul>[\s\S]*?<\/ul>/g, function (match) {
+          return match
+            .replace(/<ul>\s*/g, '\n')
+            .replace(/\s*<\/ul>/g, '\n')
+            .replace(/\s*<li>\s*/g, '- ')
+            .replace(/\s*<\/li>\s*/g, '\n');
+        })
+        .trim();
       console.log('🚀 ~ AiService End ~ result:', result);
-      
+
       // TODO: handle result
       if (result && !isTransactionSuccess) {
         // TODO: Edit message in chat

@@ -2,14 +2,14 @@ import { Module } from '@nestjs/common';
 import { configDb } from './configs';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity, AdminConfigEntity, TransactionEntity, UserReferralEntity } from "./entities";
+import { UserEntity, AdminConfigEntity, TransactionEntity, UserReferralEntity } from './entities';
 import {
   UserRepository,
   AdminConfigRepository,
   TransactionRepository,
   UserReferralRepository,
-} from "./repositories";
-import { SeedDatabase } from "./seeders/seed.database";
+} from './repositories';
+import { SeedDatabase } from './seeders/seed.database';
 
 const repositories = [
   UserRepository,
