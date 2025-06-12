@@ -47,6 +47,8 @@ import { ListaProvider } from '@binkai/lista-provider';
 import { HyperliquidProvider } from '@binkai/hyperliquid-provider';
 import { ClaimService } from './claim.service';
 import sanitizeHtml from 'sanitize-html';
+import { DodoProvider } from '@binkai/dodo-provider';
+import { RelayProvider } from '@binkai/relay-provider';
 
 @Injectable()
 export class AiService implements OnApplicationBootstrap {
@@ -216,23 +218,38 @@ export class AiService implements OnApplicationBootstrap {
         const oku = new OkuProvider(this.bscProvider, ChainId.BSC);
         const kyberBsc = new KyberProvider(this.bscProvider, ChainId.BSC);
         const jupiter = new JupiterProvider(new Connection(process.env.RPC_URL));
-        const imagePlugin = new ImagePlugin();
-        const swapPlugin = new SwapPlugin();
-        const tokenPlugin = new TokenPlugin();
         const knowledgePlugin = new KnowledgePlugin();
         const bridgePlugin = new BridgePlugin();
         const debridge = new deBridgeProvider(
           [this.bscProvider, new Connection(process.env.RPC_URL)],
-          56,
+          ChainId.BSC,
           7565164,
         );
-        const walletPlugin = new WalletPlugin();
+        const relay = new RelayProvider(
+          [this.bscProvider, new Connection(process.env.RPC_URL)],
+          ChainId.BSC,
+          792703809,
+        );
         const stakingPlugin = new StakingPlugin();
         const thena = new ThenaProvider(this.bscProvider, ChainId.BSC);
         const lista = new ListaProvider(this.bscProvider, ChainId.BSC);
-
         const kyberBase = new KyberProvider(this.baseProvider, ChainId.BASE);
         const hyperliquid = new HyperliquidProvider(this.hyperliquidProvider, ChainId.HYPERLIQUID);
+        const dodoBnb = new DodoProvider({
+          provider: this.bscProvider,
+          chainId: ChainId.BSC,
+          apiKey: this.configService.get<string>('dodo.apiKey'),
+        });
+        const dodoBase = new DodoProvider({
+          provider: this.baseProvider,
+          chainId: ChainId.BASE,
+          apiKey: this.configService.get<string>('dodo.apiKey') || '',
+        });
+
+        const imagePlugin = new ImagePlugin();
+        const swapPlugin = new SwapPlugin();
+        const tokenPlugin = new TokenPlugin();
+        const walletPlugin = new WalletPlugin();
 
         // Initialize the swap plugin with supported chains and providers
         await Promise.all([
@@ -248,6 +265,8 @@ export class AiService implements OnApplicationBootstrap {
               kyberBsc,
               kyberBase,
               hyperliquid,
+              dodoBnb,
+              dodoBase,
             ],
             supportedChains: ['bnb', 'ethereum', 'solana', 'base', 'hyperliquid'], // These will be intersected with agent's networks
           }),
@@ -265,7 +284,7 @@ export class AiService implements OnApplicationBootstrap {
           }),
           await bridgePlugin.initialize({
             defaultChain: 'bnb',
-            providers: [debridge],
+            providers: [debridge, relay],
             supportedChains: ['bnb', 'solana'],
           }),
           await walletPlugin.initialize({
