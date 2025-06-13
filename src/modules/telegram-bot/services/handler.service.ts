@@ -1,26 +1,26 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { Message, CallbackQuery } from "node-telegram-bot-api";
-import { OpenMiniAppHandler } from "../handlers/open-mini-app.handler";
-import { StartHandler } from "../handlers/start.handler";
-import { Handler } from "../handlers/handler";
-import { COMMAND_KEYS, USER_INPUT } from "../constants";
-import { UserInputHandler } from "../handlers/user-input.handler";
-import { BuyHandler } from "../handlers/buy.handler";
-import { TokenInfoHandler } from "../handlers/token-info.handler";
-import { CustomAmountHandler } from "../handlers/custom-amount.handler";
-import { ConfirmBuyHandler } from "../handlers/confirm-buy.handler";
-import { SellHandler } from "../handlers/sell.handler";
-import { SellTokenDetailHandler } from "../handlers/sell-token-detail.handler";
-import { ConfirmSellHandler } from "../handlers/confirm-sell.handler";
-import { WalletHandler } from "../handlers/wallet.handler";
-import { ExportKeysHandler } from "../handlers/export-keys.handler";
-import { ComingSoonHandler } from "../handlers/coming-soon.handler";
-import { WithdrawHandler } from "../handlers/withdraw.handler";
-import { CustomPercentageHandler } from "../handlers/custom-percentage.handler";
-import { HelpHandler } from "../handlers/help.handler";
-import { ReferralHandler } from "../handlers/referral.handler";
-import { ClearHandler } from "../handlers/clear.handler";
-import { HumanReviewHandler } from "../handlers/human-review.handler";
+import { Inject, Injectable } from '@nestjs/common';
+import { Message, CallbackQuery } from 'node-telegram-bot-api';
+import { OpenMiniAppHandler } from '../handlers/open-mini-app.handler';
+import { StartHandler } from '../handlers/start.handler';
+import { Handler } from '../handlers/handler';
+import { COMMAND_KEYS, USER_INPUT } from '../constants';
+import { UserInputHandler } from '../handlers/user-input.handler';
+import { BuyHandler } from '../handlers/buy.handler';
+import { TokenInfoHandler } from '../handlers/token-info.handler';
+import { CustomAmountHandler } from '../handlers/custom-amount.handler';
+import { ConfirmBuyHandler } from '../handlers/confirm-buy.handler';
+import { SellHandler } from '../handlers/sell.handler';
+import { SellTokenDetailHandler } from '../handlers/sell-token-detail.handler';
+import { ConfirmSellHandler } from '../handlers/confirm-sell.handler';
+import { WalletHandler } from '../handlers/wallet.handler';
+import { ExportKeysHandler } from '../handlers/export-keys.handler';
+import { ComingSoonHandler } from '../handlers/coming-soon.handler';
+import { WithdrawHandler } from '../handlers/withdraw.handler';
+import { CustomPercentageHandler } from '../handlers/custom-percentage.handler';
+import { HelpHandler } from '../handlers/help.handler';
+import { ReferralHandler } from '../handlers/referral.handler';
+import { ClearHandler } from '../handlers/clear.handler';
+import { HumanReviewHandler } from '../handlers/human-review.handler';
 
 @Injectable()
 export class HandlerService {
@@ -63,7 +63,7 @@ export class HandlerService {
     private readonly clearHandler: ClearHandler,
     @Inject(HumanReviewHandler)
     private readonly humanReviewHandler: HumanReviewHandler,
-  ) { }
+  ) {}
 
   getHandlers() {
     return {
@@ -91,7 +91,6 @@ export class HandlerService {
   }
 
   async handleMessage(message: Message) {
-    console.log('🚀 ~ HandlerService ~ handleMessage ~ message:', message);
     const { text, chat, from } = message;
 
     if (!text) return;

@@ -292,7 +292,6 @@ export class TelegramBot implements OnApplicationBootstrap {
     const res = await fetch(`${url}${token}/getUserChatBoosts?chat_id=${chatId}&user_id=${userId}`);
     const data = await res.json();
     const boosts = data?.result?.boosts;
-    console.log('🚀 ~ file: telegram-bot.ts ~ line 191 ~ TelegramBot ~ boosts', boosts);
     return boosts;
   }
 

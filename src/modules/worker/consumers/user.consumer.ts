@@ -16,7 +16,5 @@ export class UserConsumer {
   }
 
   @OnQueueCompleted()
-  async onQueueCompleted(job: Job<any>) {
-    console.log('🚀 ~ DONE JOB', job?.data, job?.name, job?.opts);
-  }
+  async onQueueCompleted(job: Job<any>) {}
 }
