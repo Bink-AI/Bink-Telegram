@@ -371,36 +371,13 @@ Wallet HYPERLIQUID: ${(await wallet.getAddress(NetworkName.HYPERLIQUID)) || 'Not
           telegramId,
           this.bot,
           messageThinkingId,
-          (type: string, message: string) => {
-            console.log('🚀 ~ AiService ~ type ask user:', type);
-            console.log('🚀 ~ AiService ~ message ask user:', message);
-            // if (type === EMessageType.ASK_USER) {
-            //   isTransactionSuccess = true;
-            //   this.bot.editMessageText(message, {
-            //     chat_id: telegramId,
-            //     message_id: messageThinkingId,
-            //     parse_mode: 'HTML',
-            //   });
-            // }
-          },
+          (type: string, message: string) => {},
         );
         const humanReviewCallback = new ExampleHumanReviewCallback(
           telegramId,
           this.bot,
           messageThinkingId,
-          (type: string, message: string) => {
-            console.log('🚀 ~ AiService ~ human review ~ type:', type);
-            console.log('🚀 ~ AiService ~ human review ~ message:', message);
-
-            // if (type === EMessageType.HUMAN_REVIEW) {
-            //   isTransactionSuccess = true;
-            //   this.bot.editMessageText(message, {
-            //     chat_id: telegramId,
-            //     message_id: messageThinkingId,
-            //     parse_mode: 'HTML',
-            //   });
-            // }
-          },
+          (type: string, message: string) => {},
         );
 
         this.mapToolExecutionCallback[telegramId] = toolExecutionCallback;
@@ -512,7 +489,6 @@ Wallet HYPERLIQUID: ${(await wallet.getAddress(NetworkName.HYPERLIQUID)) || 'Not
   }
 
   async handleTransaction(telegramId: string, transactionData: any) {
-    console.log('🚀 ~ AiService ~ handleTransaction ~ transactionData:', transactionData);
     const timestampClaim = Math.floor(Date.now() / 1000) + 9 * 24 * 60 * 60;
     await this.claimService.saveClaimTransaction(
       telegramId,

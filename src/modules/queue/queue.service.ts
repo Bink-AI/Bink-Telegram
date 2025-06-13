@@ -9,10 +9,6 @@ export class QueueService {
   ) {}
 
   async fetchDataWhenSignUp(username: string) {
-    console.log(
-      '🚀 ~ QueueService ~ fetchDataWhenSignUp ~ username:',
-      username,
-    );
     await this.userQueue.add(
       QUEUE_PROCESSOR.USER.FETCH_DATA_WHEN_SIGN_UP,
       {

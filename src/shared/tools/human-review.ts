@@ -77,6 +77,14 @@ Please review the following transaction details carefully before proceeding:
 - <b>To:</b> ${data.data.toAddress}
 - <b>Network:</b> ${getNetwork(data.data.network)}
       `;
+    } else if (data.toolName === ToolName.BRIDGE) {
+      message = `📝 <b>Review Transaction</b>
+Please review the following transaction details carefully before proceeding:
+- <b>From:</b> ${formatSmartNumber(data.data.fromAmount || 0)} ${data.data.fromToken?.symbol || ''} 
+- <b>To:</b> ${formatSmartNumber(data.data.toAmount || 0)} ${data.data.toToken?.symbol || ''}
+- <b>Network:</b> ${getNetwork(data.data.fromNetwork)} ➙ ${getNetwork(data.data.toNetwork)}
+- <b>Protocol:</b> ${getProvider(data.data.provider) || ''}
+      `;
     }
     const keyboard = {
       inline_keyboard: [
